@@ -2,6 +2,7 @@ package org.gui;
 
 import org.utils.CsvHandler;
 
+import javax.swing.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.ArrayList;
@@ -14,7 +15,6 @@ public class GuiWrapper {
         CsvHandler ch = new CsvHandler("/home/lubi/Documents/Projects/BISp/AI/sat_detect/src/inference/results/initial/test.csv");
         csvResult = ch.readCsvToList();
         currentIndex = 1;
-
         createNextGUI();
     }
 

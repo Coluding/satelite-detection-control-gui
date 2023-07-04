@@ -1,9 +1,7 @@
 package org.gui;
 
-import org.jetbrains.annotations.NotNull;
 import org.utils.*;
 
-import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -11,7 +9,6 @@ import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class GUI extends JFrame {
@@ -160,7 +157,7 @@ public class GUI extends JFrame {
         acceptButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String[] values = {String.valueOf(longitude), String.valueOf(latitude), label};
+                String[] values = {String.valueOf(longitudeRef.get()), String.valueOf(latitudeRef.get()), label};
                 CsvHandler.writeToCSV(values, config.getProperty("app.approvedCSV"));
                 GUI.super.dispose();
             }
@@ -205,7 +202,7 @@ public class GUI extends JFrame {
         return RequestHandler.getImageFromURL(filledUrl);
     }
 
-    @NotNull
+
     private JLabel createImgLabel(float longitude, float latitude, int size) {
         Image image;
         try {
