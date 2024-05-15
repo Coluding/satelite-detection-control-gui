@@ -12,29 +12,31 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
-public class GUI extends JFrame {
+public class LabelGUI extends JFrame {
     private AtomicReference<Float> latitudeRef;
     private AtomicReference<Float> longitudeRef;
-    private String label;
-    ConfigHandler config = new ConfigHandler();
 
-    public GUI(float longitude, float latitude, String label) {
+    private ConfigHandler config = new ConfigHandler();
+
+    public LabelGUI(ConfigHandler config, float longitude, float latitude) {
         longitudeRef = new AtomicReference<>(longitude);
         latitudeRef = new AtomicReference<>(latitude);
-        this.label = label;
+
+
+        String[] buttons = config.getProperty("app.chooseLabels").split(",");
 
         int size = Integer.parseInt(config.getProperty("app.imageWidth"));
-        List<String> labelMapping = config.getListProp("app.labels");
+        List<String> labelMapping = List.of(buttons);
         JLabel imgLabel = createImgLabel(longitudeRef.get(), latitudeRef.get(), size);
         JLabel mainPanel = new JLabel();
         JLabel headerLabel = new JLabel();
-        headerLabel.setText(labelMapping.get(Integer.parseInt(label)));
         mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
         JPanel contentPanel = new JPanel();
         contentPanel.setBackground(Color.WHITE);
         contentPanel.setLayout(new GridBagLayout());
 
         contentPanel.add(imgLabel, new GridBagConstraints());
+
         JPanel controlButtonPanel = new JPanel();
         JButton plusButtonX = new JButton("X+");
         JButton minusButtonX = new JButton("X-");
@@ -126,49 +128,23 @@ public class GUI extends JFrame {
         controlButtonPanel.add(plusButtonY);
         controlButtonPanel.add(minusButtonY);
 
-
         JPanel buttonPanel = new JPanel();
-        JButton denyButton = new JButton();
-        denyButton.setSize(new Dimension(50, 50));
-        denyButton.setText("Prediction ablehnen");
-        denyButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                String[] values = {String.valueOf(longitudeRef.get()), String.valueOf(latitudeRef.get()),
-                        labelMapping.get(Integer.valueOf(label))};
-                CsvHandler.writeToCSV(values, config.getProperty("app.deniedCSV"));
-                GUI.super.dispose();
-            }
-        });
+        for (int i = 0; i < buttons.length; i++) {
+            JButton labelButton = new JButton(buttons[i]);
+            String label = buttons[i];
+            labelButton.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    String[] values = {String.valueOf(longitudeRef.get()), String.valueOf(latitudeRef.get()),
+                            label};
+                    CsvHandler.writeToCSV(values, config.getProperty("app.storeCSV"));
+                    LabelGUI.super.dispose();
+                }
+            });
+            buttonPanel.add(labelButton, new GridBagConstraints());
+        }
 
-        JButton evalButton = new JButton();
-        evalButton.setSize(new Dimension(50, 50));
-        evalButton.setText("Separat evaluieren");
-        evalButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                String[] values = {String.valueOf(longitudeRef.get()), String.valueOf(latitudeRef.get()),
-                        labelMapping.get(Integer.parseInt(label))};
-                CsvHandler.writeToCSV(values, config.getProperty("app.evalCSV"));
-                GUI.super.dispose();
-            }
-        });
 
-        JButton acceptButton = new JButton();
-        acceptButton.setSize(new Dimension(50, 50));
-        acceptButton.setText("Prediction annehmen");
-        acceptButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                String[] values = {String.valueOf(longitudeRef.get()), String.valueOf(latitudeRef.get()),
-                        labelMapping.get(Integer.parseInt(label))};
-                CsvHandler.writeToCSV(values, config.getProperty("app.approvedCSV"));
-                GUI.super.dispose();
-            }
-        });
-        buttonPanel.add(denyButton, new GridBagConstraints());
-        buttonPanel.add(evalButton, new GridBagConstraints());
-        buttonPanel.add(acceptButton, new GridBagConstraints());
 
         JPanel exitPanel = new JPanel();
         JButton exitButton = new JButton("EXIT");
@@ -186,6 +162,7 @@ public class GUI extends JFrame {
         mainPanel.add(controlButtonPanel);
         mainPanel.add(contentPanel);
         mainPanel.add(buttonPanel);
+
         mainPanel.add(exitPanel);
         this.setSize(new Dimension(700, 700));
         this.setTitle("Prediction Evaluation");
