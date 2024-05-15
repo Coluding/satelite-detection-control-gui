@@ -1,6 +1,7 @@
 package org.utils;
 
 import java.util.ArrayList;
+import java.util.Locale;
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.io.IOException;
@@ -22,7 +23,7 @@ public class RequestHandler {
 
     public static String fillURL(String url, ArrayList<Float> coordinates, String imageSize){
 
-        String filledURL = String.format(url, coordinates.get(3), coordinates.get(0), coordinates.get(2),
+        String filledURL = String.format(Locale.US, url, coordinates.get(3), coordinates.get(0), coordinates.get(2),
                 coordinates.get(1), imageSize, imageSize);
 
         return filledURL;

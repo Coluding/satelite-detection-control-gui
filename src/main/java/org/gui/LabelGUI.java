@@ -16,11 +16,13 @@ public class LabelGUI extends JFrame {
     private AtomicReference<Float> latitudeRef;
     private AtomicReference<Float> longitudeRef;
 
-    private ConfigHandler config = new ConfigHandler();
+    private ConfigHandler config;
 
     public LabelGUI(ConfigHandler config, float longitude, float latitude) {
         longitudeRef = new AtomicReference<>(longitude);
         latitudeRef = new AtomicReference<>(latitude);
+
+        this.config = config;
 
 
         String[] buttons = config.getProperty("app.chooseLabels").split(",");

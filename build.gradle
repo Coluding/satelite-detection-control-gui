@@ -4,6 +4,6 @@ plugins {
 
 jar {
     manifest {
-        attributes 'Main-Class': 'de.Main' // Replace 'com.example.MainClass' with the fully qualified name of your main class
+        attributes 'Main-Class': 'de.Main'
     }
 }
