@@ -25,4 +25,17 @@ public class CoordinatesHandler {
 
         return result;
     }
+
+    public static List<Float> convertToGeoCoordinates(float x, float y, float longitude, float latitude, int size, float relativeSize) {
+        List<Float> bbox = formBbox(longitude, latitude, relativeSize);
+        float relX = x / size;
+        float relY = y / size;
+        float newLongitude = bbox.get(1) - relY * relativeSize;
+        float newLatitude = bbox.get(3) + relX * relativeSize;
+
+        List<Float> newData =  new ArrayList<>();
+        newData.add(newLongitude);
+        newData.add(newLatitude);
+        return newData;
+    }
 }
