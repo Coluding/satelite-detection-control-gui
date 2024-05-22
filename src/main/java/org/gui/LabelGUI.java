@@ -23,12 +23,14 @@ import java.util.concurrent.atomic.AtomicReference;
         private AtomicReference<Float> longitudeRef;
         private float currentX;
         private float currentY;
-        private final float centerLongitude;
-        private final float centerLatitude;
+        private float centerLongitude;
+        private float centerLatitude;
         private ConfigHandler config;
         private BufferedImage originalImage;
         private int stepSize = 5;
         private JLabel coordinatesLabel;
+        private JLabel zoomLevelLabel;
+        private float relativeSize;
 
         private enum Direction {
             Xmin, Xplus, Ymin, Yplus;
@@ -42,7 +44,7 @@ import java.util.concurrent.atomic.AtomicReference;
             latitudeRef = new AtomicReference<>(latitude);
 
             this.config = config;
-
+            relativeSize = Float.parseFloat(config.getProperty("app.relativeWidth"));
             String[] buttons = config.getProperty("app.chooseLabels").split(",");
 
             int size = Integer.parseInt(config.getProperty("app.imageWidth"));
@@ -112,7 +114,6 @@ import java.util.concurrent.atomic.AtomicReference;
                 public void mouseClicked(MouseEvent e) {
                     currentX = (float) e.getX();
                     currentY = (float) e.getY();
-                    float relativeSize = Float.parseFloat(config.getProperty("app.relativeWidth"));
                     List<Float> geoCoordinates = CoordinatesHandler.convertToGeoCoordinates(currentX, currentY,
                             centerLongitude, centerLatitude, size, relativeSize);
                     longitudeRef.set(geoCoordinates.get(0));
@@ -163,9 +164,40 @@ import java.util.concurrent.atomic.AtomicReference;
             coordinatesPanel.add(copyButton);
             coordinatesPanel.add(coordinatesLabel);
             coordinatesPanel.add(googleMapsButton);
-
             controlButtonPanel.add(coordinatesPanel);
 
+            JPanel zoomPanel = new JPanel();
+            JPanel zoomButtonPanel = new JPanel();
+            zoomPanel.setLayout(new FlowLayout());
+            zoomButtonPanel.setLayout(new FlowLayout());
+            JButton zoomInButton = new JButton("Zoom In");
+            JSlider zoomSlider = new JSlider(JSlider.HORIZONTAL, 0, 100, (int) (relativeSize * 10000));
+            zoomSlider.setMajorTickSpacing(10);
+            zoomSlider.setMinorTickSpacing(1);
+            zoomSlider.setPaintTicks(true);
+            zoomSlider.setPaintLabels(true);
+            zoomSlider.addChangeListener(e -> {
+                relativeSize = zoomSlider.getValue() / 10000.0f;
+                updateZoomLevelLabel();
+            });
+            zoomInButton.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    relativeSize = relativeSize + 0.0001f;
+                    zoomSlider.setValue((int) (relativeSize * 10000));
+                    updateZoomLevelLabel();
+                    updateImage(imgLabel, size);
+                }
+            });
+            zoomSlider.setPreferredSize(new Dimension(zoomSlider.getPreferredSize().width * 2, zoomSlider.getPreferredSize().height));
+            zoomLevelLabel = new JLabel();
+            updateZoomLevelLabel();
+            zoomPanel.add(new JLabel("Zoom Level:"));
+            zoomPanel.add(zoomLevelLabel);
+            zoomPanel.add(zoomSlider);
+            zoomButtonPanel.add(zoomInButton);
+            controlButtonPanel.add(zoomPanel);
+            controlButtonPanel.add(zoomButtonPanel);
             JPanel labelButtonPanel = new JPanel();
             for (String button : buttons) {
                 JButton labelButton = new JButton(button);
@@ -198,7 +230,7 @@ import java.util.concurrent.atomic.AtomicReference;
             mainPanel.add(contentPanel);
             mainPanel.add(labelButtonPanel);
             mainPanel.add(exitPanel);
-            this.setSize(new Dimension(700, 700));
+            this.setSize(new Dimension(700, 1000));
             this.setTitle("Labelling");
 
             this.add(mainPanel);
@@ -210,7 +242,6 @@ import java.util.concurrent.atomic.AtomicReference;
         private Image getCurrentImage(float longitude, float latitude) throws IOException {
             String url = config.getProperty("app.formatURL");
             String size = config.getProperty("app.imageWidth");
-            float relativeSize = Float.parseFloat(config.getProperty("app.relativeWidth"));
             ArrayList<Float> bbox = (ArrayList<Float>) CoordinatesHandler.formBbox(longitude, latitude, relativeSize);
             String filledUrl = RequestHandler.fillURL(url, bbox, size);
             return RequestHandler.getImageFromURL(filledUrl);
@@ -254,6 +285,10 @@ import java.util.concurrent.atomic.AtomicReference;
             imgLabel.setIcon(icon);
             imgLabel.revalidate();
             imgLabel.repaint();
+            centerLongitude = longitudeRef.get();
+            centerLatitude = latitudeRef.get();
+            currentY = size / 2;
+            currentX = size / 2;
         }
 
         private void drawRedCircle(JLabel imgLabel, int x, int y, int size) {
@@ -271,7 +306,6 @@ import java.util.concurrent.atomic.AtomicReference;
         }
 
         private void moveCircle(JLabel imgLabel, int size, Direction direction) {
-            float relativeSize = Float.parseFloat(config.getProperty("app.relativeWidth"));
             switch (direction) {
                 case Xmin:
                     currentX = currentX - stepSize;
@@ -292,11 +326,16 @@ import java.util.concurrent.atomic.AtomicReference;
             drawRedCircle(imgLabel, (int)currentX, (int)currentY, size);
             System.out.println("Longitude, Latitude: " + geoCoordinates.get(0) + "," + geoCoordinates.get(1));
             latitudeRef.set(geoCoordinates.get(1));
+            longitudeRef.set(geoCoordinates.get(0));
             updateCoordinatesLabel();
         }
 
         private void updateCoordinatesLabel() {
             coordinatesLabel.setText("Longitude, Latitude: " + longitudeRef.get() + "," + latitudeRef.get());
+        }
+
+        private void updateZoomLevelLabel() {
+            zoomLevelLabel.setText(String.format("%.4f", relativeSize));
         }
 
 }
