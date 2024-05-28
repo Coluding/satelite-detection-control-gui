@@ -1,6 +1,5 @@
 package org.main;
 
-
 import org.gui.GuiWrapper;
 import org.gui.PathGUI;
 import org.utils.ConfigHandler;
