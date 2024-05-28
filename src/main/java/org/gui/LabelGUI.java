@@ -214,7 +214,7 @@ public class LabelGUI extends JFrame {
 
         // Set the frame to full screen
         this.setExtendedState(JFrame.MAXIMIZED_BOTH);
-        this.setUndecorated(true);
+
     }
 
     private Image getCurrentImage(float longitude, float latitude) throws IOException {
