@@ -18,7 +18,7 @@ public class Main {
         pathGUI.addWindowCloseListener(new WindowAdapter() {
             @Override
             public void windowClosed(WindowEvent e) {
-                GuiWrapper guiWrapper = new GuiWrapper(config, true);
+                GuiWrapper guiWrapper = new GuiWrapper(config, false);
             }
         });
 

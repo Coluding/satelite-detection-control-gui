@@ -3,10 +3,10 @@ package org.gui;
 import org.utils.ConfigHandler;
 import org.utils.CsvHandler;
 
-
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class GuiWrapper {
@@ -15,9 +15,17 @@ public class GuiWrapper {
     private ConfigHandler config;
     private boolean labelGUI;
 
+    private int latIndex;
+    private int lonIndex;
+    private int catIndex;
+
     public GuiWrapper(ConfigHandler config, boolean labelGUI) {
         this.config = config;
         this.labelGUI = labelGUI;
+
+        latIndex = -1;
+        lonIndex = -1;
+        catIndex = -1;
         if (labelGUI) {
             CsvHandler ch = new CsvHandler(config.getProperty("app.dataCSV"));
             csvResult = ch.readCsvToList();
@@ -36,9 +44,14 @@ public class GuiWrapper {
 
     private void createNextGUI() {
         if (currentIndex < csvResult.size()) {
-            float longitude = Float.parseFloat(csvResult.get(currentIndex)[0]);
-            float latitude = Float.parseFloat(csvResult.get(currentIndex)[1]);
-            int label = (int) Float.parseFloat(csvResult.get(currentIndex)[2]);
+            if (latIndex == -1) {
+                latIndex = Arrays.asList(csvResult.get(0)).indexOf("latitude");
+                lonIndex = Arrays.asList(csvResult.get(0)).indexOf("longitude");
+                catIndex = Arrays.asList(csvResult.get(0)).indexOf("category");
+            }
+            float longitude = Float.parseFloat(csvResult.get(currentIndex)[latIndex]);
+            float latitude = Float.parseFloat(csvResult.get(currentIndex)[lonIndex]);
+            int label = (int) Float.parseFloat(csvResult.get(currentIndex)[catIndex]);
             GUI gui = new GUI(longitude, latitude, String.valueOf(label));
 
             gui.addWindowListener(new WindowAdapter() {
@@ -53,8 +66,12 @@ public class GuiWrapper {
 
     private void createNextLabelGUI() {
         if (currentIndex < csvResult.size()) {
-            float longitude = Float.parseFloat(csvResult.get(currentIndex)[0]);
-            float latitude = Float.parseFloat(csvResult.get(currentIndex)[1]);
+            if (latIndex == -1) {
+                latIndex = Arrays.asList(csvResult.get(0)).indexOf("latitude");
+                lonIndex = Arrays.asList(csvResult.get(0)).indexOf("longitude");
+            }
+            float longitude = Float.parseFloat(csvResult.get(currentIndex)[latIndex]);
+            float latitude = Float.parseFloat(csvResult.get(currentIndex)[lonIndex]);
             LabelGUI gui = new LabelGUI(config, longitude, latitude);
 
             gui.addWindowListener(new WindowAdapter() {
